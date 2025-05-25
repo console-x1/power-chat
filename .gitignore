@@ -1,0 +1,6 @@
+*.log
+*.sqlite
+
+/node_modules/
+
+shadow.json
