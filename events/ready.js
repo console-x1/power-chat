@@ -22,7 +22,7 @@ module.exports = {
                 if (guild) {
                     const channel = guild.channels.cache.get(row.channelId);
                     if (channel) {
-                        channel.send({ embeds: [new EmbedBuilder().setColor(client.config.color).setDescription(`\`\`\`ansi\n\x1b[32m[READY] ${client.user.tag} est prêt : ${client.guilds.cache.size} serveurs | ${client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)} utilisateurs\x1b[39m\`\`\``)] });
+                        channel.send({ embeds: [new EmbedBuilder().setColor('Blue').setDescription(`\`\`\`ansi\n\x1b[32m[READY] ${client.user.tag} est prêt : ${client.guilds.cache.size} serveurs | ${client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)} utilisateurs\x1b[39m\`\`\``)] });
                     } else {
                         console.log(`Le salon ${row.channelId} n'existe pas dans le serveur ${row.guildId}.`);
                         db.run('DELETE FROM channel WHERE guildId = ? AND channelId = ?', [row.guildId, row.channelId], (err) => {
