@@ -46,11 +46,12 @@ let status = [
         type: ActivityType.Custom,
     },
     {
-        name: '/interserveur',
+        name: 'Ajoute moi pour plus d\'activité',
         type: ActivityType.Custom,
     },
     {
         name: 'Code disponible sur GitHub',
-        type: ActivityType.Custom,
+        type: ActivityType.Streaming,
+        url: 'https://github.com/console-x1/power-chat'
     }
 ]
