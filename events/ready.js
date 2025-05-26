@@ -2,6 +2,9 @@ const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder, ActivityType, ti
 const colors = require("colors");
 const db = require('../database.js')
 
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 module.exports = {
     name: "ready",
     once: true,
@@ -40,6 +43,9 @@ module.exports = {
     }
 }
 
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 let status = [
     {
         name: `Discute sur l'interserveur !`,
@@ -55,3 +61,6 @@ let status = [
         url: 'https://github.com/console-x1/power-chat'
     }
 ]
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat

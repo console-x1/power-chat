@@ -1,3 +1,6 @@
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-cha
+
 const { SlashCommandBuilder, PermissionsBitField } = require("discord.js");
 
 module.exports = {
@@ -19,3 +22,6 @@ module.exports = {
             .setDescription(this.description)
     }
 }
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat

@@ -1,3 +1,6 @@
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 module.exports = {
     name: "stop",
     description: "Arrete le bot (commande OWNER BOT only)",
@@ -12,3 +15,6 @@ module.exports = {
             })
     }
 }
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat

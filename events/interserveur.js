@@ -1,6 +1,9 @@
 const { EmbedBuilder, WebhookClient } = require('discord.js');
 const db = require('../database.js');
 
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 module.exports = {
     name: "messageCreate",
     async execute(client, message) {
@@ -32,6 +35,8 @@ module.exports = {
                         .setURL(`https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`)
                         .setThumbnail(message.author.displayAvatarURL({ dynamic: true, size: 4096 }))
                         .addFields({ name: 'Utilisateur :', value: '<@' + message.author.id + '>' })
+                        .setFooter({ text: `Made by .power.x with ❤️`, iconURL: client.user.displayAvatarURL() })
+                        .setTimestamp();
 
                     message.content ? embed.setDescription(message.content) : null;
                     message.attachments.size ? message.attachments.forEach(attachment => {
@@ -97,3 +102,6 @@ module.exports = {
         });
     }
 }
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat

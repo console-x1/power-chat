@@ -1,5 +1,8 @@
 const { SlashCommandBuilder, PermissionsBitField } = require("discord.js");
 
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 module.exports = {
     name: "bot-info",
     description: "🤖 Affiche le ping du bot interserveur, le lien de son serveur et le lien pour l'inviter.",
@@ -19,3 +22,6 @@ module.exports = {
             .setDescription(this.description)
     }
 }
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat

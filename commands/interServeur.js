@@ -1,6 +1,9 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require("discord.js");
 const db = require('../database.js');
 
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 module.exports = {
     name: "setup-interserveur",
     description: "Configurer le salon de l'interServeur.",
@@ -70,6 +73,9 @@ module.exports = {
     }
 }
 
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 async function Succes(client, db, guild, invite) {
     db.all('SELECT * FROM channel', async (err, rows) => {
         if (err) {
@@ -102,3 +108,6 @@ async function Succes(client, db, guild, invite) {
         });
     });
 }
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat

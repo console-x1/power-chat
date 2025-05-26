@@ -1,3 +1,6 @@
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 module.exports = {
     name: "interactionCreate",
     async execute(client, interaction) {
@@ -55,3 +58,6 @@ module.exports = {
         }
     }
 }
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat

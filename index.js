@@ -1,3 +1,6 @@
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 const { Client, Collection, GatewayIntentBits, Partials, ActivityType } = require("discord.js");
 const fs = require("fs");
 const colors = require("colors");
@@ -60,3 +63,11 @@ process.on("exit", (code) => {
     logger.fatal("Process exited with code: " + code);
     console.log(colors.red("Process exited with code: ", code));
 });
+
+process.on("uncaughtException", (error) => {
+    logger.error("Uncaught Exception: " + error);
+    console.log(colors.red("Uncaught Exception: ", error));
+});
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat

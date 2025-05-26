@@ -1,3 +1,6 @@
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
+
 module.exports = {
     name: "messageCreate",
     async execute(client, message) {
@@ -52,3 +55,6 @@ module.exports = {
         console.log(`[CMD-MSG] || ${jours}/${mois}/${année} at ${heures}:${minutes}:${secondes} | ${message.guild.name} | ${message.author.tag} | ${command.name}`.grey);
     }
 }
+
+// Made by .power.x with ❤️
+// Code on my github : https://github.com/console-x1/power-chat
