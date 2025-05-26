@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionsBitField } = require("discord.js");
 
 module.exports = {
-    name: "membre_prefix",
+    name: "prefix",
     description: "Afficher le prefix du bot.",
     aliases: [],
     permissions: [PermissionsBitField.Flags.UseApplicationCommands],

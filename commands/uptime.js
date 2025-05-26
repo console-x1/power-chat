@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require("discord.js");
 
 module.exports = {
-    name: "membre_uptime",
+    name: "uptime",
     description: "🤖 Afficher depuis combien de temps le bot est en ligne.",
     aliases: [],
     permissions: [PermissionsBitField.Flags.UseApplicationCommands],
@@ -16,7 +16,7 @@ module.exports = {
         const embedUptime = new EmbedBuilder()
             .setColor(client.config.color)
             .setTitle("Uptime")
-            .setDescription(`<a:loading:1134743039345168477> Le bot est en ligne depuis :\n🤖 ${days} jour(s), ${hours} heure(s), ${minutes} minute(s) et ${seconds} seconde(s). 🤖\n<a:loading:1134743039345168477> Son ping est de ${client.ws.ping} ms.`);
+            .setDescription(`<a:carregando2:1221820650746806312> Le bot est en ligne depuis :\n🤖 ${days} jour(s), ${hours} heure(s), ${minutes} minute(s) et ${seconds} seconde(s). 🤖\n<a:carregando2:1221820650746806312> Son ping est de ${client.ws.ping} ms.`);
         
         message.channel.send({ embeds: [embedUptime] })
     },
@@ -29,9 +29,9 @@ module.exports = {
         const embedUptime = new EmbedBuilder()
             .setColor(client.config.color)
             .setTitle("Uptime")
-            .setDescription(`<a:loading:1134743039345168477> Le bot est en ligne depuis :\n🤖 ${days} jour(s), ${hours} heure(s), ${minutes} minute(s) et ${seconds} seconde(s). 🤖\n<a:loading:1134743039345168477> Son ping est de ${client.ws.ping} ms.`);
+            .setDescription(`<a:carregando2:1221820650746806312> Le bot est en ligne depuis :\n🤖 ${days} jour(s), ${hours} heure(s), ${minutes} minute(s) et ${seconds} seconde(s). 🤖\n<a:carregando2:1221820650746806312> Son ping est de ${client.ws.ping} ms.`);
         
-        interaction.channel.send({ embedUptime })
+        interaction.reply({ embeds: [embedUptime] })
     },
     get data() {
         return new SlashCommandBuilder()

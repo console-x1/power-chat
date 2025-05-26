@@ -8,10 +8,10 @@ module.exports = {
     guildOwnerOnly: false,
     botOwnerOnly: false,
     async execute(client, message, args) {
-        message.reply(`<a:loading:1134743039345168477> **Mon ping est de : ${client.ws.ping} ms.** <a:loading:1134743039345168477>`)
+        message.reply(`<a:carregando2:1221820650746806312> **Mon ping est de : ${client.ws.ping} ms.**`)
     },
     async executeSlash(client, interaction) {
-        interaction.reply(`<a:loading:1134743039345168477> **Mon ping est de : ${client.ws.ping} ms.** <a:loading:1134743039345168477>`)
+        interaction.reply(`<a:carregando2:1221820650746806312> **Mon ping est de : ${client.ws.ping} ms.**`)
     },
     get data() {
         return new SlashCommandBuilder()
