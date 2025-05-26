@@ -16,11 +16,15 @@ module.exports = {
         channel.createInvite({
             maxAge: 0,
             maxUses: 0
-        })
-            .then(invite => {
-                db.run(`INSERT INTO channel (guildId, channelId, invite) VALUES (?, ?, ?)`, [message.guild.id, channel.id, invite.url])
+        }).then(invite => {
+            channel.createWebhook({
+                name: "interserver",
+                avatar: "https://cdn.discordapp.com/attachments/1375593104576479383/1376273727225856021/avatar.png?ex=6834ba4a&is=683368ca&hm=13257aaf35d7ba11947a41c74308bbbb014d2c35d320b449b1dfeb9005e68909&"
+            }).then(webhook => {
+                db.run(`INSERT INTO channel (guildId, channelId, invite, webhook) VALUES (?, ?, ?, ?)`, [message.guild.id, channel.id, invite.url, webhook.url])
                 Succes(client, db, message.guild, invite.url)
             })
+        })
 
         const embed = new EmbedBuilder()
             .setColor(client.config.color)
@@ -38,8 +42,13 @@ module.exports = {
             maxUses: 0
         })
             .then(invite => {
-                db.run(`INSERT INTO channel (guildId, channelId, invite) VALUES (?, ?, ?)`, [interaction.guild.id, channel.id, invite.url])
-                Succes(client, db, interaction.guild, invite.url)
+                channel.createWebhook({
+                    name: "interserver",
+                    avatar: "https://cdn.discordapp.com/attachments/1375593104576479383/1376273727225856021/avatar.png?ex=6834ba4a&is=683368ca&hm=13257aaf35d7ba11947a41c74308bbbb014d2c35d320b449b1dfeb9005e68909&"
+                }).then(webhook => {
+                    db.run(`INSERT INTO channel (guildId, channelId, invite, webhook) VALUES (?, ?, ?, ?)`, [message.guild.id, channel.id, invite.url, webhook.url])
+                    Succes(client, db, interaction.guild, invite.url)
+                })
             })
 
         const embed = new EmbedBuilder()

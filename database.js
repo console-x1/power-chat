@@ -6,6 +6,7 @@ db.run(`CREATE TABLE IF NOT EXISTS channel (
   guildId TEXT,
   channelId TEXT,
   invite TEXT,
+  webhook TEXT,
   PRIMARY KEY (guildId, channelId)
 )`);
 
