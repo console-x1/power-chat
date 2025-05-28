@@ -38,18 +38,25 @@ module.exports = {
                         .setFooter({ text: `Made by .power.x with ❤️`, iconURL: client.user.displayAvatarURL() })
                         .setTimestamp();
 
-                    message.content ? embed.setDescription(message.content) : null;
-                    message.attachments.size ? message.attachments.forEach(attachment => {
-                        embed.addFields({ name: 'Pièce jointe', value: attachment.url });
-                    }) : message.delete().catch(err => { });
+                    if (message.content) {
+                        embed.setDescription(message.content);
+                    }
+
+                    if (message.attachments.size) {
+                        message.attachments.forEach(attachment => {
+                            embed.addFields({ name: 'Pièce jointe', value: attachment.url });
+                        });
+                    } else {
+                        message.delete().catch(err => { });
+                    }
 
                     let refMessage;
                     if (message.reference && message.reference.messageId) {
                         try {
                             refMessage = await message.channel.messages.fetch(message.reference.messageId);
-                            if (refMessage && refMessage.embeds && refMessage.embeds[0] && refMessage.embeds[0].description) {
+                            if (refMessage?.embeds?.[0]?.description) {
                                 embed.addFields({ name: "En reponse à :", value: refMessage.embeds[0].description + '\n**De :** ' + refMessage.embeds[0].fields[0].value });
-                            } else if (refMessage && refMessage.content) {
+                            } else if (refMessage?.content) {
                                 embed.addFields({ name: "En reponse à :", value: refMessage.content + '\n**De :** <@' + refMessage.author.id + '>' });
                             }
                         } catch (err) {
@@ -60,42 +67,35 @@ module.exports = {
                     for (const row of rows) {
                         try {
                             const guild = client.guilds.cache.get(row.guildId);
-                            if (!guild) continue;
+                            if (!guild) return;
 
                             const channel = guild.channels.cache.get(row.channelId);
                             if (!channel) {
-                                console.log(`Le salon ${row.channelId} n'existe pas dans le serveur ${row.guildId}.`);
                                 db.run('DELETE FROM channel WHERE guildId = ? AND channelId = ?', [row.guildId, row.channelId]);
-                                continue;
+                                return;
                             }
 
                             let hook;
-                            try {
-                                if (row.webhook) {
-                                    hook = new WebhookClient({ url: row.webhook });
-                                    await hook.fetch();
-                                }
-                            } catch {
-                                const newWebhook = await channel.createWebhook({
-                                    name: "Webhook Interserveur",
-                                    reason: "Création de webhook pour l'interserveur",
-                                    avatar: "https://cdn.discordapp.com/avatars/1066067393123733595/61a6bf871cb8ad6478a8402ceacc96f0.webp"
-                                });
-                                db.run(`UPDATE channel SET webhook = ? WHERE guildId = ? AND channelId = ?`, [newWebhook.url, row.guildId, row.channelId]);
-                                hook = new WebhookClient({ url: newWebhook.url });
-                            }
-                            await hook.edit({
-                                name: message.author.tag,
-                                avatar: message.author.displayAvatarURL({ dynamic: true, size: 4096 })
-                            })
 
-                            if (refMessage && refMessage.embeds?.[0]?.url && guild.id == refMessage.embeds[0].url.match(/\d+/g)[0]) {
+                            const newWebhook = await channel.createWebhook({
+                                name: message.author.tag,
+                                reason: "Création de webhook pour l'interserveur",
+                                avatar: message.author.displayAvatarURL({ dynamic: true, size: 4096 })
+                            });
+                            hook = new WebhookClient({ url: newWebhook.url });
+
+                            if (refMessage?.embeds?.[0]?.url && guild.id == refMessage.embeds[0].url.match(/\d+/g)[0]) {
                                 await hook.send({ content: refMessage.embeds[0].fields[0].value, embeds: [embed] });
                             } else {
                                 await hook.send({ embeds: [embed] });
                             }
 
-                        } catch (err) { return }
+                            // Suppression du webhook après envoi
+                            await hook.delete();
+
+                        } catch (err) {
+                            return;
+                        }
                     }
                 });
             });
