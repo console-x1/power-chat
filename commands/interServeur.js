@@ -85,7 +85,7 @@ async function Succes(client, db, guild, invite) {
 
         const embed = new EmbedBuilder()
             .setColor('Green')
-            .setTitle(`Bienvenue au serveur ${guild.name} !`)
+            .setTitle(`Bienvenue au serveur ${toString(guild.name)} !`)
             .setURL(invite)
 
         rows.forEach(row => {
