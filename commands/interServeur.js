@@ -49,7 +49,7 @@ module.exports = {
                     name: "interserver",
                     avatar: "https://cdn.discordapp.com/attachments/1375593104576479383/1376273727225856021/avatar.png?ex=6834ba4a&is=683368ca&hm=13257aaf35d7ba11947a41c74308bbbb014d2c35d320b449b1dfeb9005e68909&"
                 }).then(webhook => {
-                    db.run(`INSERT INTO channel (guildId, channelId, invite, webhook) VALUES (?, ?, ?, ?)`, [message.guild.id, channel.id, invite.url, webhook.url])
+                    db.run(`INSERT INTO channel (guildId, channelId, invite, webhook) VALUES (?, ?, ?, ?)`, [interaction.guild.id, channel.id, invite.url, webhook.url])
                     Succes(client, db, interaction.guild, invite.url)
                 })
             })
@@ -85,7 +85,7 @@ async function Succes(client, db, guild, invite) {
 
         const embed = new EmbedBuilder()
             .setColor('Green')
-            .setTitle(`Bienvenue au serveur ${toString(guild.name)} !`)
+            .setTitle(`Bienvenue au serveur ${String(guild.name)} !`)
             .setURL(invite)
 
         rows.forEach(row => {
