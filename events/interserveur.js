@@ -8,6 +8,8 @@ module.exports = {
     name: "messageCreate",
     async execute(client, message) {
         if (message.channel.isDMBased() || message.author.bot) return;
+        if (message.content.includes('http') || message.content.includes('https') || message.content.includes('discord.') || message.content.includes('www.') || message.content.includes('://discord')) return;
+        if (message.content.length > 2000) return;
 
         db.get('SELECT * FROM user WHERE userId = ?', [message.author.id], (err, userRow) => {
             if (err) {
