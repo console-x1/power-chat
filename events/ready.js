@@ -15,7 +15,32 @@ module.exports = {
             client.user.setActivity(status[random]);
         }, 15000);
 
-        db.all('SELECT * FROM channel', (err, rows) => { 
+        let tries = 0;
+        async function sendReadyEmbed() {
+            if (client.ws.ping !== -1 || tries >= 5) {
+                const embed = new EmbedBuilder()
+                    .setTitle(`<:verif:1262343660700434464> Je suis opérationnel !`)
+                    .setDescription(
+                        `<:member:1262160675686584414> **Ping :** ${client.ws.ping} ms\n` +
+                        `<:members:1262160643126198352> J'ai **${client.guilds.cache.size} serveurs** et **${client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)} utilisateurs !**`
+                    )
+                    .setColor(client.config.color)
+                    .setTimestamp()
+                    .setFooter({
+                        text: `${client.user.tag} - Le bot qui relance vos serveurs !`,
+                        iconURL: client.user.displayAvatarURL(),
+                    });
+                
+                const channel = client.channels.cache.get('1398286990511964383')
+                await channel.send({ embeds: [embed] });
+            } else {
+                tries++;
+                setTimeout(sendReadyEmbed, 750);
+            }
+        }
+        sendReadyEmbed();
+
+        db.all('SELECT * FROM channel', (err, rows) => {
             if (err) {
                 console.error(err);
                 return;

@@ -22,13 +22,6 @@ module.exports = {
                 return
             };
 
-            if (command.staffOnly) {
-                if (!client.config.staff.includes(interaction.user.id)) return interaction.reply({
-                    content: `❌ **Vous devez être __staff du bot__ pour exécuter cette commande.**`,
-                    ephemeral: true
-                });
-            };
-
             if (command.guildOwnerOnly) {
                 if (message.guild.ownerId != message.author.id && !client.config.owners.includes(message.author.id)) return message.reply("Vous devez être le propriétaire du serveur pour exécuter cette commande.").catch(() => { });
                 return

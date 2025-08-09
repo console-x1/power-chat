@@ -19,13 +19,6 @@ module.exports = {
                     });
                 };
 
-                if (command.staffOnly && !client.config.staff.includes(interaction.user.id) || !client.config.owners.includes(interaction.user.id)) {
-                    return interaction.reply({
-                        content: `❌ **Vous devez être __staff du bot__ pour exécuter cette commande.**`,
-                        ephemeral: true
-                    })
-                }
-
                 if (command.guildOwnerOnly) {
                     if (interaction.member.guild.ownerId != interaction.user.id && !client.config.owners.includes(interaction.user.id)) return interaction.reply({
                         content: `❌ **Vous devez être le __propriétaire du serveur__ pour exécuter cette commande.**`,
