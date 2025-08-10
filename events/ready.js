@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder, ActivityType, time } = require("discord.js");
 const colors = require("colors");
 const db = require('../database.js')
+const WebhookRegistry = require('../webhookRegistry');
 
 // Made by .power.x with ❤️
 // Code on my github : https://github.com/console-x1/power-chat
@@ -40,11 +41,20 @@ module.exports = {
         }
         sendReadyEmbed();
 
-        db.all('SELECT * FROM channel', (err, rows) => {
+        
+        client.relayRegistry = new WebhookRegistry(client, {
+            name: 'Interserver Relay',
+            deleteOthers: true 
+        });
+
+        db.all('SELECT * FROM channel', async (err, rows) => {
             if (err) {
                 console.error(err);
                 return;
             }
+            await client.relayRegistry.prewarmFromRows(rows || []);
+            console.log(`🔥 Webhooks préchauffés pour ${rows.length} salons.`);
+
             rows.forEach(row => {
                 const guild = client.guilds.cache.get(row.guildId);
                 if (guild) {
