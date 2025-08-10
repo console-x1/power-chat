@@ -1,108 +1,113 @@
-const { EmbedBuilder, WebhookClient } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const db = require('../database.js');
+const WebhookRegistry = require('../webhookRegistry');
 
 // Made by .power.x with ❤️
 // Code on my github : https://github.com/console-x1/power-chat
 
 module.exports = {
-    name: "messageCreate",
-    async execute(client, message) {
-        if (message.channel.isDMBased() || message.author.bot) return;
-        if (message.content.includes('http') || message.content.includes('https') || message.content.includes('discord.') || message.content.includes('www.') || message.content.includes('://discord')) return;
-        if (message.content.length > 2000) return;
+  name: "messageCreate",
+  async execute(client, message) {
+    if (message.channel.isDMBased() || message.author.bot) return;
+    if (message.content.includes('http') || message.content.includes('https') || message.content.includes('discord.') || message.content.includes('www.') || message.content.includes('://discord')) return;
+    if (message.content.length > 2000) return;
 
-        db.get('SELECT * FROM user WHERE userId = ?', [message.author.id], (err, userRow) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            if (userRow) return;
-
-            db.get('SELECT * FROM channel WHERE guildId = ? AND channelId = ?', [message.guild.id, message.channel.id], (err, channelRow) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                if (!channelRow) return;
-
-                db.all('SELECT * FROM channel', async (err, rows) => {
-                    if (err) {
-                        console.error(err);
-                        return;
-                    }
-
-                    const embed = new EmbedBuilder()
-                        .setColor(client.config.staff.includes(message.author.id) || client.config.owners.includes(message.author.id) ? "ff0000" : client.config.color)
-                        .setTitle(`Message de ${message.author.tag} depuis ${message.guild.name}`)
-                        .setURL(`https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`)
-                        .setThumbnail(message.author.displayAvatarURL({ dynamic: true, size: 4096 }))
-                        .addFields({ name: 'Utilisateur :', value: '<@' + message.author.id + '>' })
-                        .setFooter({ text: `Made by .power.x with ❤️`, iconURL: client.user.displayAvatarURL() })
-                        .setTimestamp();
-
-                    if (message.content) {
-                        embed.setDescription(message.content);
-                    }
-
-                    if (message.attachments.size) {
-                        message.attachments.forEach(attachment => {
-                            embed.addFields({ name: 'Pièce jointe', value: attachment.url });
-                        });
-                    } else {
-                        message.delete().catch(err => { });
-                    }
-
-                    let refMessage;
-                    if (message.reference && message.reference.messageId) {
-                        try {
-                            refMessage = await message.channel.messages.fetch(message.reference.messageId);
-                            if (refMessage?.embeds?.[0]?.description) {
-                                embed.addFields({ name: "En reponse à :", value: refMessage.embeds[0].description + '\n**De :** ' + refMessage.embeds[0].fields[0].value });
-                            } else if (refMessage?.content) {
-                                embed.addFields({ name: "En reponse à :", value: refMessage.content + '\n**De :** <@' + refMessage.author.id + '>' });
-                            }
-                        } catch (err) {
-                            console.error("Erreur lors de la récupération du message référencé :", err);
-                        }
-                    }
-
-                    for (const row of rows) {
-                        try {
-                            const guild = client.guilds.cache.get(row.guildId);
-                            if (!guild) return;
-
-                            const channel = guild.channels.cache.get(row.channelId);
-                            if (!channel) {
-                                db.run('DELETE FROM channel WHERE guildId = ? AND channelId = ?', [row.guildId, row.channelId]);
-                                return;
-                            }
-
-                            let hook;
-
-                            const newWebhook = await channel.createWebhook({
-                                name: message.author.tag,
-                                reason: "Création de webhook pour l'interserveur",
-                                avatar: message.author.displayAvatarURL({ dynamic: true, size: 4096 })
-                            });
-                            hook = new WebhookClient({ url: newWebhook.url });
-
-                            if (refMessage?.embeds?.[0]?.url && guild.id == refMessage.embeds[0].url.match(/\d+/g)[0]) {
-                                await hook.send({ content: refMessage.embeds[0].fields[0].value, embeds: [embed] });
-                            } else {
-                                await hook.send({ embeds: [embed] });
-                            }
-
-                            // Suppression du webhook après envoi
-                            await hook.delete();
-
-                        } catch (err) {
-                            return;
-                        }
-                    }
-                });
-            });
-        });
+    if (!client.relayRegistry) {
+      client.relayRegistry = new WebhookRegistry(client, {
+        name: 'Interserver Relay',
+        deleteOthers: true,
+      });
     }
+
+    db.get('SELECT * FROM user WHERE userId = ?', [message.author.id], (err, userRow) => {
+      if (err) return console.error(err);
+      if (userRow) return;
+
+      db.get('SELECT * FROM channel WHERE guildId = ? AND channelId = ?', [message.guild.id, message.channel.id], (err, channelRow) => {
+        if (err) return console.error(err);
+        if (!channelRow) return;
+
+        db.all('SELECT * FROM channel', async (err, rows) => {
+          if (err) return console.error(err);
+          if (!rows?.length) return;
+
+          const isStaff = client.config.staff.includes(message.author.id);
+          const isOwner = client.config.owners.includes(message.author.id);
+          const color = isStaff ? 0x0000FF : isOwner ? 0xFF0000 : client.config.color ?? 0x00FF00;
+
+          const embed = new EmbedBuilder()
+            .setColor(color)
+            .setTitle(`Message de ${message.author.tag} depuis ${message.guild.name}`)
+            .setURL(`https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`)
+            .setThumbnail(message.author.displayAvatarURL({ dynamic: true, size: 1024 }))
+            .addFields({ name: 'Utilisateur :', value: `<@${message.author.id}>` })
+            .setFooter({ text: `Made by .power.x with ❤️`, iconURL: client.user.displayAvatarURL() })
+            .setTimestamp();
+
+          if (message.content) {
+            embed.setDescription(message.content);
+          }
+
+          if (message.attachments.size > 0) {
+            for (const att of message.attachments.values()) {
+              if (att.contentType?.startsWith('image/')) embed.setImage(att.url);
+              else embed.addFields({ name: 'Pièce jointe', value: att.url });
+            }
+          }
+
+          if (message.reference?.messageId) {
+            try {
+              const ref = await message.channel.messages.fetch(message.reference.messageId);
+              const refAuthor = ref?.author ? `<@${ref.author.id}>` : 'Utilisateur inconnu';
+              const refContent = ref?.embeds?.[0]?.description || ref?.content || '';
+              const preview = refContent.length > 300 ? refContent.slice(0, 297) + '…' : refContent;
+              const refLink = `https://discord.com/channels/${ref.guildId}/${ref.channelId}/${ref.id}`;
+              embed.addFields({
+                name: 'En réponse à :',
+                value: `${preview || '*Sans contenu*'}\n**De :** ${refAuthor}\n[Ouvrir](${refLink})`
+              });
+            } catch (e) {
+              console.warn('Référence introuvable:', e.message);
+            }
+          }
+
+          let sentSomewhere = false;
+          for (const row of rows) {
+            try {
+              if (row.guildId === message.guild.id && row.channelId === message.channel.id) continue;
+
+              const guild = client.guilds.cache.get(row.guildId);
+              if (!guild) continue;
+
+              const target = guild.channels.cache.get(row.channelId);
+              if (!target) {
+                db.run('DELETE FROM channel WHERE guildId = ? AND channelId = ?', [row.guildId, row.channelId]);
+                continue;
+              }
+
+              const wh = await client.relayRegistry.ensure(target);
+              await wh.send({
+                username: message.member?.displayName ?? message.author.tag,
+                avatarURL: message.author.displayAvatarURL({ size: 1024 }),
+                embeds: [embed],
+                allowedMentions: { parse: [] }
+              });
+
+              sentSomewhere = true;
+            } catch (err) {
+              console.error('Erreur envoi webhook:', err);
+              continue;
+            }
+          }
+
+          const hasAttachment = message.attachments.size > 0;
+          if (sentSomewhere && !hasAttachment && message.deletable) {
+            message.delete().catch(() => {});
+          }
+        });
+      });
+    });
+  }
 }
 
 // Made by .power.x with ❤️
