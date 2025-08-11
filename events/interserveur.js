@@ -5,11 +5,34 @@ const WebhookRegistry = require('../webhookRegistry');
 // Made by .power.x with ❤️
 // Code on my github : https://github.com/console-x1/power-chat
 
+const blockRegex = new RegExp(
+  [
+    /@everyone|@here|<@&?\d{17,20}>/,                          // Mentions
+    /(https?:\/\/|www\.)\S+/,                                  // Liens
+    /discord(\.gg|\.com\/invite)\/[a-z0-9\-]+/,                // Invites Discord
+    /([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/,                 // Emails
+    /\b\d{1,3}(\.\d{1,3}){3}\b/,                               // IPv4
+    /\[?([a-f0-9:]+:+)+[a-f0-9]+\]?/i,                         // IPv6
+    /([\p{L}\p{N}\p{S}\p{P}])\1{5,}/u,                         // Spam répétitif
+    /[\u200B-\u200F\u202A-\u202E]/,                            // Invisibles
+    /d[\W_]*[1i!|][\W_]*s[\W_]*c[\W_]*o[\W_]*r[\W_]*d/i,       // Leet "discord"
+    /g[\W_]*0[\W_]*0[\W_]*g[\W_]*l[\W_]*e/i,                   // Leet "google"
+    /([a-zа-яёΑ-Ωα-ω]){2,}/iu,                                 // Homographes Unicode (latin, cyrillique, grec)
+    /\b(?:\d[ -]*?){13,19}\b/,                                 // Carte bancaire
+    /mfa\.[\w-]{84}|[\w-]{24}\.[\w-]{6}\.[\w-]{27}/,           // Token Discord
+    /AKIA[0-9A-Z]{16}/,                                        // AWS key
+    /\b[A-Z]{2}[0-9A-Z]{13,34}\b/,                             // IBAN
+    /(?:\+33|0)[1-9](?:[ .-]?\d{2}){4}/                        // Téléphone FR
+  ]
+    .map(r => r.source)
+    .join("|"),
+  "giu"
+);
+
 module.exports = {
   name: "messageCreate",
   async execute(client, message) {
     if (message.channel.isDMBased() || message.author.bot) return;
-    if (message.content.includes('http') || message.content.includes('https') || message.content.includes('discord.') || message.content.includes('www.') || message.content.includes('://discord')) return;
     if (message.content.length > 2000) return;
 
     if (!client.relayRegistry) {
@@ -26,6 +49,12 @@ module.exports = {
       db.get('SELECT * FROM channel WHERE guildId = ? AND channelId = ?', [message.guild.id, message.channel.id], (err, channelRow) => {
         if (err) return console.error(err);
         if (!channelRow) return;
+
+        const letters = message.content.replace(/[^a-zA-Z]/g, '');
+        if (letters.length > 5 && (letters.replace(/[^A-Z]/g, '').length / letters.length) > 0.8) {
+          return message.delete();
+        }
+        if (blockRegex.test(message.content)) return message.delete();
 
         db.all('SELECT * FROM channel', async (err, rows) => {
           if (err) return console.error(err);
@@ -98,11 +127,6 @@ module.exports = {
               console.error('Erreur envoi webhook:', err);
               continue;
             }
-          }
-
-          const hasAttachment = message.attachments.size > 0;
-          if (sentSomewhere && !hasAttachment && message.deletable) {
-            message.delete().catch(() => {});
           }
         });
       });
