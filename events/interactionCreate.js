@@ -49,6 +49,13 @@ module.exports = {
             command.executeSlash(client, interaction);
             console.log(`[CMD-S] || ${jours}/${mois}/${année} at ${heures}:${minutes}:${secondes} | ${interaction.guild.name} | ${interaction.channel.name} | ${interaction.user.tag} | ${command.name}`.yellow);
         }
+        if (interaction.isButton()) {
+            const [action, ...params] = interaction.customId.split("_");
+            if (action === "interserveurMessage") {
+                const [guildId, channelId, messageId, authorId] = params;
+                interaction.reply({ content: `🔗 **[Voir le message original](https://discord.com/channels/${guildId}/${channelId}/${messageId})**`, flags: 64 });
+            }
+        }
     }
 }
 

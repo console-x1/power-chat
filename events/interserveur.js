@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const db = require('../database.js');
 const WebhookRegistry = require('../webhookRegistry');
 
@@ -23,7 +23,7 @@ module.exports = {
   name: "messageCreate",
   async execute(client, message) {
     if (message.channel.isDMBased() || message.author.bot) return;
-    if (message.content.length > 2000) return;
+    if (message.content.length > 2000) return message.reply({ content: '❌ **Votre message est trop long pour être relayé (2000 caractères max).**', flags: 64 });
 
     if (!client.relayRegistry) {
       client.relayRegistry = new WebhookRegistry(client, {
@@ -31,6 +31,8 @@ module.exports = {
         deleteOthers: true,
       });
     }
+
+    if (blockRegex.test(message.content)) return message.reply({ content: '❌ **Votre message contient du contenu bloqué (mentions, liens, invites, IPs) et ne peut pas être relayé.**', flags: 64 });
 
     db.get('SELECT * FROM user WHERE userId = ?', [message.author.id], (err, userRow) => {
       if (err) return console.error(err);
@@ -40,47 +42,60 @@ module.exports = {
         if (err) return console.error(err);
         if (!channelRow) return;
 
-        if (blockRegex.test(message.content)) return message.delete();
-
         db.all('SELECT * FROM channel', async (err, rows) => {
           if (err) return console.error(err);
           if (!rows?.length) return;
 
-          const isStaff = client.config.staff.includes(message.author.id);
-          const isOwner = client.config.owners.includes(message.author.id);
-          const color = isStaff ? 0x0000FF : isOwner ? 0xFF0000 : client.config.color ?? 0x00FF00;
+          // Créer le bouton avec le customId
+          const customId = `interserveurMessage_${message.guild.id}_${message.channel.id}_${message.id}_${message.author.id}`;
+          const button = new ButtonBuilder()
+            .setCustomId(customId)
+            .setLabel(message.guild.name)
+            .setEmoji('🔗')
+            .setStyle(ButtonStyle.Secondary);
 
-          const embed = new EmbedBuilder()
-            .setColor(color)
-            .setTitle(`Message de ${message.author.tag} depuis ${message.guild.name}`)
-            .setURL(`https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`)
-            .setThumbnail(message.author.displayAvatarURL({ dynamic: true, size: 1024 }))
-            .addFields({ name: 'Utilisateur :', value: `<@${message.author.id}>` })
-            .setFooter({ text: `Made by .power.x with ❤️`, iconURL: client.user.displayAvatarURL() })
-            .setTimestamp();
+          const actionRow = new ActionRowBuilder().addComponents(button);
 
+          // Créer le message simple
+          let messageContent = ``;
           if (message.content) {
-            embed.setDescription(message.content);
+            messageContent += message.content;
           }
 
           if (message.attachments.size > 0) {
+            messageContent += '\n\n**Pièces jointes:**\n';
             for (const att of message.attachments.values()) {
-              if (att.contentType?.startsWith('image/')) embed.setImage(att.url);
-              else embed.addFields({ name: 'Pièce jointe', value: att.url });
+              messageContent += `-# ${att.url}\n`;
             }
           }
+
+          if (messageContent.length === 0) return;
 
           if (message.reference?.messageId) {
             try {
               const ref = await message.channel.messages.fetch(message.reference.messageId);
-              const refAuthor = ref?.author ? `<@${ref.author.id}>` : 'Utilisateur inconnu';
-              const refContent = ref?.embeds?.[0]?.description || ref?.content || '';
-              const preview = refContent.length > 300 ? refContent.slice(0, 297) + '…' : refContent;
-              const refLink = `https://discord.com/channels/${ref.guildId}/${ref.channelId}/${ref.id}`;
-              embed.addFields({
-                name: 'En réponse à :',
-                value: `${preview || '*Sans contenu*'}\n**De :** ${refAuthor}\n[Ouvrir](${refLink})`
-              });
+              // Usage du bouton pour determiner le message d'origine
+              const btn = ref.components?.[0]?.components?.[0]?.customId?.startsWith('interserveurMessage_')
+              if (btn) {
+              if (btn.customId?.startsWith('interserveurMessage_')) {
+                const parts = btn.customId.split('_');
+                const originGuildId = parts[1];
+                const originChannelId = parts[2];
+                const originMessageId = parts[3];
+                const originGuild = client.guilds.cache.get(originGuildId);
+                if (originGuild) {
+                  const originChannel = originGuild.channels.cache.get(originChannelId);
+                  if (originChannel) {
+                    const originMessage = await originChannel.messages.fetch(originMessageId);
+                    if (originMessage) {
+                      messageContent += `\n\n> **En réponse à:** ${originMessage.author.tag} - https://discord.com/channels/${originGuildId}/${originChannelId}/${originMessageId} - ${originMessage.content.trim().slice(0, 100) || '*Pièce jointe*'}`;
+                    }
+                  }
+                }
+              }
+            } else {
+                messageContent += `\n\n> **En réponse à:** ${ref.author.tag} - https://discord.com/channels/${message.guild.id}/${message.channel.id}/${ref.id} - ${ref.content.trim().slice(0, 100) || '*Pièce jointe*'}`;
+            }
             } catch (e) {
               console.warn('Référence introuvable:', e.message);
             }
@@ -103,7 +118,8 @@ module.exports = {
               await wh.send({
                 username: message.member?.displayName ?? message.author.tag,
                 avatarURL: message.author.displayAvatarURL({ size: 1024 }),
-                embeds: [embed],
+                content: messageContent,
+                components: [actionRow],
                 allowedMentions: { parse: [] }
               });
 
