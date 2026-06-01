@@ -32,8 +32,6 @@ module.exports = {
       });
     }
 
-    if (blockRegex.test(message.content)) return message.reply({ content: '❌ **Votre message contient du contenu bloqué (mentions, liens, invites, IPs) et ne peut pas être relayé.**', flags: 64 });
-
     db.get('SELECT * FROM user WHERE userId = ?', [message.author.id], (err, userRow) => {
       if (err) return console.error(err);
       if (userRow) return;
@@ -45,6 +43,8 @@ module.exports = {
         db.all('SELECT * FROM channel', async (err, rows) => {
           if (err) return console.error(err);
           if (!rows?.length) return;
+          
+          if (blockRegex.test(message.content)) return message.reply({ content: '❌ **Votre message contient du contenu bloqué (mentions, liens, invites, IPs) et ne peut pas être relayé.**', flags: 64 });
 
           // Créer le bouton avec le customId
           const customId = `interserveurMessage_${message.guild.id}_${message.channel.id}_${message.id}_${message.author.id}`;
